@@ -49,29 +49,29 @@ class Calculator(QWidget):
         self.backspaceButton = self.createButton("DEL", self.backspaceClicked)
         self.plusButton = self.createButton("+", self.additiveOperatorClicked)
         self.minusButton = self.createButton("-", self.additiveOperatorClicked)
-        self.multipliedButton = self.createButton("x", self.additiveOperatorClicked)
-        self.dividedButton = self.createButton("/", self.additiveOperatorClicked)
-        self.clearButton = self.createButton("C", self.additiveOperatorClicked)
+        self.multipliedButton = self.createButton(u"\N{MULTIPLICATION SIGN}", self.multiplicativeOperatorClicked)
+        self.dividedButton = self.createButton(u"\N{DIVISION SIGN}", self.multiplicativeOperatorClicked)
+        self.clearButton = self.createButton("C", self.clear)
         self.equalButton = self.createButton("=", self.equalClicked)
 
         mainLayout = QGridLayout()
         mainLayout.setSizeConstraint(QLayout.SetFixedSize)
         # Row, Col, VSize, HSize 
-        mainLayout.addWidget(self.display, 0, 0, 1, 5)
-        mainLayout.addWidget(self.plusButton, 2, 1, 1, 1)
-        mainLayout.addWidget(self.minusButton, 2, 2, 1, 1)
-        mainLayout.addWidget(self.multipliedButton, 2, 3, 1, 1)
-        mainLayout.addWidget(self.dividedButton, 2, 4, 1, 1)
-        mainLayout.addWidget(self.backspaceButton, 6, 3, 1, 1)
+        mainLayout.addWidget(self.display, 0, 0, 1, 6)
+        mainLayout.addWidget(self.plusButton, 1, 1, 1, 1)
+        mainLayout.addWidget(self.minusButton, 1, 2, 1, 1)
+        mainLayout.addWidget(self.multipliedButton, 1, 3, 1, 1)
+        mainLayout.addWidget(self.dividedButton, 1, 4, 1, 1)
+        mainLayout.addWidget(self.backspaceButton, 5, 3, 1, 1)
                 
         for i in range(1, Calculator.NumDigitButtons):
-            row = ((9 - i) / 3) + 3
+            row = ((9 - i) / 3) + 2
             column = ((i - 1) % 3) + 1
             mainLayout.addWidget(self.digitButtons[i], row, column)
 
-        mainLayout.addWidget(self.digitButtons[0], 6, 1, 1, 2)
-        mainLayout.addWidget(self.clearButton, 3, 4, 2, 1)
-        mainLayout.addWidget(self.equalButton, 5, 4, 2, 1)
+        mainLayout.addWidget(self.digitButtons[0], 5, 1, 1, 2)
+        mainLayout.addWidget(self.clearButton, 2, 4, 2, 1)
+        mainLayout.addWidget(self.equalButton, 4, 4, 2, 1)
 
         self.setLayout(mainLayout)
         self.setWindowTitle("Calculator")
@@ -88,6 +88,28 @@ class Calculator(QWidget):
             self.waitingForOperand = False
 
         self.display.setText(self.display.text() + str(digitValue))
+
+    def createButton(self, text, member):
+        button = Button(text)
+        button.clicked.connect(member)
+        return button
+
+    def multiplicativeOperatorClicked(self):
+        clickedButton = self.sender()
+        clickedOperator = clickedButton.text()
+        operand = float(self.display.text())
+		
+        if self.pendingMultiplicativeOperator:
+            if not self.calculate(operand, self.pendingMultiplicativeOperator):
+                self.abortOperation()
+                return
+				
+            self.display.setText(str(self.factorSoFar))
+        else:
+            self.factorSoFar = operand
+			
+        self.pendingMultiplicativeOperator = clickedOperator
+        self.waitingForOperand = True
 
     def additiveOperatorClicked(self):
         clickedButton = self.sender()
@@ -153,9 +175,10 @@ class Calculator(QWidget):
         self.display.setText(text)
 
     def clear(self):
-        if self.waitingForOperand:
-            return
-
+        self.sumSoFar = 0.0
+        self.factorSoFar = 0.0
+        self.pendingAdditiveOperator = ''
+        self.pendingMultiplicativeOperator = ''
         self.display.setText('0')
         self.waitingForOperand = True
 

@@ -11,17 +11,17 @@ class MyApp(QDialog):
 
     def initUI(self):
 
-		# QTabWidget
+        # QTabWidget
         tabs = QTabWidget()
         tabs.addTab(FirstTab(), 'Length')
         tabs.addTab(SecondTab(), 'Weight')
 		
-		# buttonbox
+        # buttonbox
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
 
-		# boxLayout
+        # boxLayout
         vbox = QVBoxLayout()
         vbox.addWidget(tabs)
         vbox.addWidget(buttonbox)
